@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Itaú | Cockpit de Gestão</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .active-link { background-color: #ec7000; color: white !important; }
         .page-content { display: none; }
@@ -25,7 +26,7 @@
         </div>
         
         <nav class="flex-1 p-4 space-y-1">
-            <button onclick="showPage('dash')" id="link-dash" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition active-link">
+            <button onclick="showPage('dash')" id="link-dash" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition active-link font-medium">
                 <span>📊</span> Home
             </button>
             <p class="text-[10px] uppercase text-blue-300 font-bold mt-6 mb-2 ml-2">Acompanhamentos</p>
@@ -48,8 +49,11 @@
         
         <header class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
             <h2 id="page-title" class="font-bold text-lg text-[#ec7000]">Home</h2>
-            <div class="text-xs font-bold text-gray-400 uppercase bg-gray-50 px-3 py-1.5 rounded-lg border">
-                Q2 2026 • <span class="text-gray-800">Agência Vila Nova</span>
+            <div class="flex items-center gap-3">
+                <input type="file" id="excel-input" class="hidden" accept=".xlsx, .xls">
+                <button onclick="document.getElementById('excel-input').click()" class="bg-green-600 text-white text-[10px] font-bold px-3 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 uppercase tracking-tighter">
+                    📂 Importar Excel
+                </button>
             </div>
         </header>
 
@@ -57,107 +61,123 @@
             
             <section id="page-dash" class="page-content active">
                 <div class="mb-8">
-                    <h3 class="text-2xl font-black text-gray-800">Olá, Gustavo</h3>
-                    <p class="text-gray-400 text-sm italic">Aqui está o resumo da performance da sua equipe hoje.</p>
+                    <h3 class="text-2xl font-black text-gray-800 italic">Olá, Gustavo</h3>
+                    <p class="text-gray-400 text-sm">Resumo consolidado do trimestre.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <span class="text-6xl">⚖️</span>
-                        </div>
-                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Equilíbrio de Contas</p>
-                        <h4 class="text-sm font-bold text-gray-700 mb-6">Consolidado de Empréstimos</h4>
-                        
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Equilíbrio de Contas</p>
                         <div class="space-y-4">
                             <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold">Vendido (Aprovado)</p>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Aprovado</p>
                                 <p id="dash-eq-vendido" class="text-2xl font-black text-gray-800">R$ 0,00</p>
                             </div>
-                            
                             <div class="flex justify-between items-end">
-                                <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold">Meta do Trimestre</p>
-                                    <p id="dash-eq-meta" class="text-sm font-bold text-gray-600">R$ 0,00</p>
-                                </div>
-                                <div class="text-right">
-                                    <p id="dash-eq-perc" class="text-3xl font-black text-[#ec7000]">0%</p>
-                                </div>
+                                <p id="dash-eq-meta" class="text-[11px] font-bold text-gray-400">Meta: R$ 0,00</p>
+                                <p id="dash-eq-perc" class="text-2xl font-black text-[#ec7000]">0%</p>
                             </div>
-
-                            <div class="w-full bg-gray-100 h-2 rounded-full mt-2 overflow-hidden">
-                                <div id="dash-eq-barra" class="bg-[#ec7000] h-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div id="dash-eq-barra" class="bg-[#ec7000] h-full transition-all duration-1000" style="width: 0%"></div>
                             </div>
                         </div>
-                        
-                        <button onclick="showPage('equilibrio')" class="w-full mt-6 py-2 text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-tighter border-t pt-4">
-                            Ver detalhes da planilha →
-                        </button>
                     </div>
 
-                    <div class="bg-gray-50 p-6 rounded-3xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400">
-                        <span class="text-2xl mb-2">📦</span>
-                        <p class="text-xs font-bold uppercase">Produtos</p>
-                        <p class="text-[10px]">Aguardando lançamentos...</p>
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Produtos</p>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Produção Atual</p>
+                                <p class="text-2xl font-black text-gray-800">R$ 0,00</p>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <p id="dash-prod-meta" class="text-[11px] font-bold text-gray-400">Meta: R$ 0,00</p>
+                                <p class="text-2xl font-black text-blue-400">0%</p>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-blue-400 h-full w-0"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Renegociação</p>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Regularizado</p>
+                                <p class="text-2xl font-black text-gray-800">R$ 0,00</p>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <p id="dash-reneg-meta" class="text-[11px] font-bold text-gray-400">Meta: R$ 0,00</p>
+                                <p class="text-2xl font-black text-green-400">0%</p>
+                            </div>
+                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-green-400 h-full w-0"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <section id="page-equilibrio" class="page-content">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border mb-6 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-bold text-gray-400 uppercase">Status Atual: Equilíbrio</p>
-                        <h3 id="eq-soma-topo" class="text-2xl font-black text-gray-800">R$ 0,00</h3>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs font-bold text-gray-400 italic">Meta: <span id="eq-meta-topo">R$ 0,00</span></p>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
                     <div class="xl:col-span-1 bg-white p-6 rounded-2xl border shadow-sm h-fit">
                         <form id="form-eq" class="space-y-3">
-                            <input type="text" id="eq-cliente" placeholder="Cliente" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
-                            <input type="text" id="eq-conta" placeholder="Ag/Conta" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
-                            <select id="eq-modalidade" class="w-full p-2.5 border rounded-lg outline-none text-sm bg-white">
+                            <input type="text" id="eq-cliente" placeholder="Cliente" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
+                            <input type="text" id="eq-conta" placeholder="Ag/Conta" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
+                            <select id="eq-modalidade" class="w-full p-2.5 border rounded-lg text-sm bg-white outline-none">
                                 <option value="Crediário">Crediário</option>
                                 <option value="LIS">LIS</option>
                                 <option value="Consignado EP">Consignado EP</option>
                                 <option value="Consignado OP">Consignado OP</option>
                                 <option value="Consignado INSS">Consignado INSS</option>
                             </select>
-                            <input type="text" id="eq-vendedor" placeholder="Vendedor" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
-                            <input type="number" id="eq-valor" placeholder="Valor R$" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
-                            <select id="eq-aprovado" class="w-full p-2.5 border rounded-lg outline-none text-sm bg-white font-bold text-orange-600">
+                            <input type="text" id="eq-vendedor" placeholder="Vendedor" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
+                            <input type="number" id="eq-valor" placeholder="Valor R$" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
+                            <select id="eq-aprovado" class="w-full p-2.5 border rounded-lg text-sm font-bold text-orange-600 outline-none">
                                 <option value="analise">⏳ Em Análise</option>
                                 <option value="sim">✓ Aprovado</option>
                                 <option value="nao">✕ Negado</option>
                             </select>
-                            <button class="w-full bg-[#ec7000] text-white py-3 rounded-lg font-bold shadow-lg shadow-orange-100">Lançar Agora</button>
+                            <button class="w-full bg-[#ec7000] text-white py-3 rounded-lg font-bold">Lançar Agora</button>
                         </form>
                     </div>
                     <div class="xl:col-span-3 bg-white rounded-2xl border shadow-sm overflow-hidden">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-gray-50 border-b text-[10px] text-gray-400 font-black uppercase">
                                 <tr>
-                                    <th class="p-4 tracking-tighter">Cliente / Modalidade</th>
+                                    <th class="p-4">Cliente / Info</th>
                                     <th class="p-4 text-right">Valor</th>
                                     <th class="p-4 text-center">Status</th>
-                                    <th class="p-4 text-center">Ações</th>
+                                    <th class="p-4 text-center">Excluir</th>
                                 </tr>
                             </thead>
-                            <tbody id="eq-tabela-body" class="divide-y divide-gray-100"></tbody>
+                            <tbody id="eq-tabela-body" class="divide-y divide-gray-100 italic text-gray-400"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
             <section id="page-config" class="page-content">
-                <div class="bg-white p-6 rounded-2xl border max-w-sm">
-                    <h3 class="font-bold mb-4">Meta Trimestral</h3>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase">Valor Equilíbrio de Contas</label>
-                    <input type="number" id="cfg-meta-eq" class="w-full p-3 border rounded-xl mt-1 mb-4">
-                    <button onclick="salvarConfig()" class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold">Atualizar</button>
+                <div class="bg-white p-8 rounded-3xl border shadow-sm max-w-2xl">
+                    <h3 class="text-xl font-black mb-6 italic text-gray-800">Planejamento do Trimestre</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Equilíbrio de Contas (R$)</label>
+                            <input type="number" id="cfg-meta-eq" class="w-full p-3 border rounded-xl outline-none focus:border-orange-500 font-bold">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Produtos (R$)</label>
+                            <input type="number" id="cfg-meta-prod" class="w-full p-3 border rounded-xl outline-none focus:border-blue-500 font-bold">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Renegociação (R$)</label>
+                            <input type="number" id="cfg-meta-reneg" class="w-full p-3 border rounded-xl outline-none focus:border-green-500 font-bold">
+                        </div>
+                    </div>
+                    <button onclick="salvarConfig()" class="mt-8 bg-gray-800 text-white px-10 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg">
+                        Atualizar Planejamento Geral
+                    </button>
                 </div>
             </section>
 
@@ -165,78 +185,102 @@
     </main>
 
     <script>
-        let dadosEq = JSON.parse(localStorage.getItem('itau_v_final_dash')) || [];
-        let metaEq = localStorage.getItem('itau_meta_v_final_dash') || 500000;
+        // Banco de Dados Local
+        let dadosEq = JSON.parse(localStorage.getItem('itau_final_v1')) || [];
+        let metas = JSON.parse(localStorage.getItem('itau_metas_v1')) || {
+            eq: 500000, prod: 300000, reneg: 150000
+        };
 
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
             document.getElementById('page-' + id).classList.add('active');
             document.getElementById('link-' + id).classList.add('active-link');
-            
-            const titulos = { dash: 'Home', equilibrio: 'Equilíbrio de Contas', config: 'Configurações', produtos: 'Produtos', renegociacao: 'Renegociação' };
-            document.getElementById('page-title').innerText = titulos[id] || 'Itaú';
+            document.getElementById('page-title').innerText = id === 'dash' ? 'Home' : id.toUpperCase();
             render();
         }
 
+        // Lógica Excel
+        document.getElementById('excel-input').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const workbook = XLSX.read(evt.target.result, { type: 'binary' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                rows.forEach(r => dadosEq.push({
+                    id: Date.now() + Math.random(),
+                    cliente: r.Nome || r.Cliente || "Importado",
+                    conta: r.Conta || "S/N",
+                    modalidade: r.Modalidade || "Crediário",
+                    vendedor: r.Vendedor || "Equipe",
+                    valor: parseFloat(r.Valor || 0),
+                    aprovado: (r.Status || "analise").toLowerCase().includes('sim') ? 'sim' : 'analise'
+                }));
+                saveAndRender();
+            };
+            reader.readAsBinaryString(e.target.files[0]);
+        });
+
         function toggleStatus(id) {
-            const index = dadosEq.findIndex(d => d.id === id);
+            const idx = dadosEq.findIndex(d => d.id === id);
             const flow = ['analise', 'sim', 'nao'];
-            dadosEq[index].aprovado = flow[(flow.indexOf(dadosEq[index].aprovado) + 1) % 3];
+            dadosEq[idx].aprovado = flow[(flow.indexOf(dadosEq[idx].aprovado) + 1) % 3];
             saveAndRender();
         }
 
         function deleteRegistro(id) {
-            if(confirm('Excluir lançamento?')) {
+            if(confirm('Excluir?')) {
                 dadosEq = dadosEq.filter(d => d.id !== id);
                 saveAndRender();
             }
         }
 
+        function salvarConfig() {
+            metas.eq = document.getElementById('cfg-meta-eq').value;
+            metas.prod = document.getElementById('cfg-meta-prod').value;
+            metas.reneg = document.getElementById('cfg-meta-reneg').value;
+            localStorage.setItem('itau_metas_v1', JSON.stringify(metas));
+            alert('Planejamento Atualizado com sucesso!');
+            render();
+        }
+
         function saveAndRender() {
-            localStorage.setItem('itau_v_final_dash', JSON.stringify(dadosEq));
+            localStorage.setItem('itau_final_v1', JSON.stringify(dadosEq));
             render();
         }
 
         function render() {
-            const aprovados = dadosEq.filter(d => d.aprovado === 'sim');
-            const soma = aprovados.reduce((s, c) => s + c.valor, 0);
-            const perc = Math.min((soma / metaEq) * 100, 100).toFixed(1);
+            // Cálculos Equilíbrio
+            const aprovEq = dadosEq.filter(d => d.aprovado === 'sim').reduce((s, c) => s + c.valor, 0);
+            const percEq = Math.min((aprovEq / metas.eq) * 100, 100).toFixed(1);
 
-            // Atualiza Dashboard (Home)
-            document.getElementById('dash-eq-vendido').innerText = soma.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            document.getElementById('dash-eq-meta').innerText = parseFloat(metaEq).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            document.getElementById('dash-eq-perc').innerText = Math.round(perc) + '%';
-            document.getElementById('dash-eq-barra').style.width = perc + '%';
+            // Dashboard
+            document.getElementById('dash-eq-vendido').innerText = aprovEq.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('dash-eq-meta').innerText = `Meta: R$ ${parseFloat(metas.eq).toLocaleString()}`;
+            document.getElementById('dash-eq-perc').innerText = Math.round(percEq) + '%';
+            document.getElementById('dash-eq-barra').style.width = percEq + '%';
 
-            // Atualiza Tela de Equilíbrio
-            if(document.getElementById('eq-soma-topo')) {
-                document.getElementById('eq-soma-topo').innerText = soma.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                document.getElementById('eq-meta-topo').innerText = parseFloat(metaEq).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            }
+            document.getElementById('dash-prod-meta').innerText = `Meta: R$ ${parseFloat(metas.prod).toLocaleString()}`;
+            document.getElementById('dash-reneg-meta').innerText = `Meta: R$ ${parseFloat(metas.reneg).toLocaleString()}`;
 
+            // Tabela
             const body = document.getElementById('eq-tabela-body');
             body.innerHTML = dadosEq.map(d => `
                 <tr class="hover:bg-gray-50 border-l-4 ${d.aprovado === 'sim' ? 'border-l-green-400' : d.aprovado === 'nao' ? 'border-l-red-300' : 'border-l-yellow-300'}">
-                    <td class="p-4">
-                        <div class="font-bold text-gray-800">${d.cliente}</div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase">${d.modalidade} • ${d.vendedor}</div>
-                    </td>
-                    <td class="p-4 text-right font-black ${d.aprovado === 'sim' ? 'text-green-600' : 'text-gray-400'}">
-                        R$ ${d.valor.toLocaleString()}
-                    </td>
+                    <td class="p-4"><div class="font-bold text-gray-800">${d.cliente}</div><div class="text-[10px] text-gray-400 uppercase font-black">${d.modalidade} • ${d.vendedor}</div></td>
+                    <td class="p-4 text-right font-black ${d.aprovado === 'sim' ? 'text-green-600' : 'text-gray-400'}">R$ ${d.valor.toLocaleString()}</td>
                     <td class="p-4 text-center">
                         <button onclick="toggleStatus(${d.id})" class="px-2 py-1 rounded-md text-[9px] font-black uppercase border ${d.aprovado === 'sim' ? 'status-sim' : d.aprovado === 'nao' ? 'status-nao' : 'status-analise'}">
-                            ${d.aprovado === 'sim' ? 'Aprovado' : d.aprovado === 'nao' ? 'Negado' : 'Em Análise'}
+                            ${d.aprovado === 'sim' ? 'Aprovado' : d.aprovado === 'nao' ? 'Negado' : 'Análise'}
                         </button>
                     </td>
-                    <td class="p-4 text-center">
-                        <button onclick="deleteRegistro(${d.id})" class="text-gray-300 hover:text-red-500 transition font-bold text-lg">✕</button>
-                    </td>
+                    <td class="p-4 text-center"><button onclick="deleteRegistro(${d.id})" class="text-gray-300 hover:text-red-500 transition font-bold text-lg font-black">✕</button></td>
                 </tr>
             `).reverse().join('');
 
-            document.getElementById('cfg-meta-eq').value = metaEq;
+            // Preencher inputs config
+            document.getElementById('cfg-meta-eq').value = metas.eq;
+            document.getElementById('cfg-meta-prod').value = metas.prod;
+            document.getElementById('cfg-meta-reneg').value = metas.reneg;
         }
 
         document.getElementById('form-eq').onsubmit = (e) => {
@@ -253,13 +297,6 @@
             e.target.reset();
             saveAndRender();
         };
-
-        function salvarConfig() {
-            metaEq = document.getElementById('cfg-meta-eq').value;
-            localStorage.setItem('itau_meta_v_final_dash', metaEq);
-            alert('Meta Atualizada!');
-            render();
-        }
 
         render();
     </script>
