@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Itaú | Cockpit de Gestão</title>
+    <title>Itaú | Cockpit Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -13,171 +13,117 @@
         .status-sim { background-color: #dcfce7; color: #166534; }
         .status-nao { background-color: #fee2e2; color: #991b1b; }
         .status-analise { background-color: #fef9c3; color: #854d0e; }
-        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
+        /* Esconder scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @media (max-width: 768px) {
+            .sidebar-closed { transform: translateX(-100%); }
+            .sidebar-open { transform: translateX(0); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-700">
 
-    <aside class="w-64 bg-[#003399] text-white flex flex-col shadow-xl z-20">
-        <div class="p-6 border-b border-blue-800">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#003399] text-white flex flex-col shadow-2xl transition-transform duration-300 sidebar-closed md:relative md:translate-x-0">
+        <div class="p-6 border-b border-blue-800 flex justify-between items-center">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <span class="bg-white text-[#003399] px-2 py-0.5 rounded text-sm">itau</span> Cockpit
             </h1>
+            <button onclick="toggleMenu()" class="md:hidden text-2xl">✕</button>
         </div>
         
         <nav class="flex-1 p-4 space-y-1">
-            <button onclick="showPage('dash')" id="link-dash" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition active-link font-medium">
+            <button onclick="showPage('dash')" id="link-dash" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-blue-800 transition active-link">
                 <span>📊</span> Home
             </button>
-            <p class="text-[10px] uppercase text-blue-300 font-bold mt-6 mb-2 ml-2">Acompanhamentos</p>
-            <button onclick="showPage('equilibrio')" id="link-equilibrio" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
+            <p class="text-[10px] uppercase text-blue-300 font-bold mt-6 mb-2 ml-2 tracking-widest">Gestão</p>
+            <button onclick="showPage('equilibrio')" id="link-equilibrio" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-blue-800 transition text-blue-100">
                 <span>⚖️</span> Equilíbrio de Contas
             </button>
-            <button onclick="showPage('produtos')" id="link-produtos" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
-                <span>📦</span> Produtos
-            </button>
-            <button onclick="showPage('renegociacao')" id="link-renegociacao" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
-                <span>🤝</span> Renegociação
-            </button>
-            <button onclick="showPage('config')" id="link-config" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
+            <button onclick="showPage('config')" id="link-config" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-blue-800 transition text-blue-100">
                 <span>⚙️</span> Configurar Metas
             </button>
         </nav>
     </aside>
 
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         <header class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
-            <h2 id="page-title" class="font-bold text-lg text-[#ec7000]">Home</h2>
             <div class="flex items-center gap-3">
-                <input type="file" id="excel-input" class="hidden" accept=".xlsx, .xls">
-                <button onclick="document.getElementById('excel-input').click()" class="bg-green-600 text-white text-[10px] font-bold px-3 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 uppercase tracking-tighter">
-                    📂 Importar Excel
-                </button>
+                <button onclick="toggleMenu()" class="md:hidden text-2xl p-1">☰</button>
+                <h2 id="page-title" class="font-bold text-lg text-[#ec7000] truncate">Home</h2>
             </div>
+            <button onclick="document.getElementById('excel-input').click()" class="bg-green-600 text-white text-[10px] font-bold px-3 py-2 rounded-lg hover:bg-green-700 transition uppercase">
+                📂 <span class="hidden md:inline">Importar</span> Excel
+            </button>
+            <input type="file" id="excel-input" class="hidden" accept=".xlsx, .xls">
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar">
             
-            <section id="page-dash" class="page-content active">
-                <div class="mb-8">
-                    <h3 class="text-2xl font-black text-gray-800 italic">Olá, Gustavo</h3>
-                    <p class="text-gray-400 text-sm">Resumo consolidado do trimestre.</p>
+            <section id="page-dash" class="page-content active space-y-6">
+                <div class="bg-gradient-to-r from-[#003399] to-blue-700 p-6 rounded-3xl text-white shadow-lg">
+                    <h3 class="text-xl font-bold italic">Olá, Gustavo</h3>
+                    <p class="text-blue-200 text-xs">Aqui está sua performance consolidada.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Equilíbrio de Contas</p>
-                        <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Equilíbrio de Contas</p>
+                        <div class="flex justify-between items-end mb-2">
                             <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold">Aprovado</p>
-                                <p id="dash-eq-vendido" class="text-2xl font-black text-gray-800">R$ 0,00</p>
+                                <p class="text-[10px] text-gray-400 font-bold">VENDIDO</p>
+                                <p id="dash-eq-vendido" class="text-xl font-black text-gray-800">R$ 0,00</p>
                             </div>
-                            <div class="flex justify-between items-end">
-                                <p id="dash-eq-meta" class="text-[11px] font-bold text-gray-400">Meta: R$ 0,00</p>
-                                <p id="dash-eq-perc" class="text-2xl font-black text-[#ec7000]">0%</p>
-                            </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div id="dash-eq-barra" class="bg-[#ec7000] h-full transition-all duration-1000" style="width: 0%"></div>
-                            </div>
+                            <p id="dash-eq-perc" class="text-3xl font-black text-[#ec7000]">0%</p>
                         </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Produtos</p>
-                        <div class="space-y-4">
-                            <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold">Produção Atual</p>
-                                <p class="text-2xl font-black text-gray-800">R$ 0,00</p>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <p id="dash-prod-meta" class="text-[11px] font-bold text-gray-400">Meta: R$ 0,00</p>
-                                <p class="text-2xl font-black text-blue-400">0%</p>
-                            </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div class="bg-blue-400 h-full w-0"></div>
-                            </div>
+                        <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                            <div id="dash-eq-barra" class="bg-[#ec7000] h-full transition-all duration-1000" style="width: 0%"></div>
                         </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Renegociação</p>
-                        <div class="space-y-4">
-                            <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold">Regularizado</p>
-                                <p class="text-2xl font-black text-gray-800">R$ 0,00</p>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <p id="dash-reneg-meta" class="text-[11px] font-bold text-gray-400">Meta: R$ 0,00</p>
-                                <p class="text-2xl font-black text-green-400">0%</p>
-                            </div>
-                            <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div class="bg-green-400 h-full w-0"></div>
-                            </div>
-                        </div>
+                        <p id="dash-eq-meta" class="text-[10px] text-gray-400 mt-2 font-bold uppercase">Meta: R$ 0,00</p>
                     </div>
                 </div>
             </section>
 
-            <section id="page-equilibrio" class="page-content">
+            <section id="page-equilibrio" class="page-content space-y-6">
+                <button onclick="toggleForm()" class="md:hidden w-full bg-[#ec7000] text-white py-3 rounded-xl font-bold shadow-lg mb-4">
+                    + Novo Lançamento
+                </button>
+
                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                    <div class="xl:col-span-1 bg-white p-6 rounded-2xl border shadow-sm h-fit">
+                    <div id="form-container" class="hidden md:block xl:col-span-1 bg-white p-6 rounded-2xl border shadow-sm">
+                        <h4 class="font-bold mb-4 text-gray-800 border-b pb-2">Lançamento</h4>
                         <form id="form-eq" class="space-y-3">
-                            <input type="text" id="eq-cliente" placeholder="Cliente" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
-                            <input type="text" id="eq-conta" placeholder="Ag/Conta" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
-                            <select id="eq-modalidade" class="w-full p-2.5 border rounded-lg text-sm bg-white outline-none">
+                            <input type="text" id="eq-cliente" placeholder="Cliente" class="w-full p-3 border rounded-xl text-sm outline-none focus:border-orange-500" required>
+                            <input type="text" id="eq-conta" placeholder="Ag/Conta" class="w-full p-3 border rounded-xl text-sm outline-none focus:border-orange-500" required>
+                            <select id="eq-modalidade" class="w-full p-3 border rounded-xl text-sm bg-white">
                                 <option value="Crediário">Crediário</option>
                                 <option value="LIS">LIS</option>
                                 <option value="Consignado EP">Consignado EP</option>
                                 <option value="Consignado OP">Consignado OP</option>
                                 <option value="Consignado INSS">Consignado INSS</option>
                             </select>
-                            <input type="text" id="eq-vendedor" placeholder="Vendedor" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
-                            <input type="number" id="eq-valor" placeholder="Valor R$" class="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-orange-500" required>
-                            <select id="eq-aprovado" class="w-full p-2.5 border rounded-lg text-sm font-bold text-orange-600 outline-none">
+                            <input type="text" id="eq-vendedor" placeholder="Vendedor" class="w-full p-3 border rounded-xl text-sm outline-none focus:border-orange-500" required>
+                            <input type="number" id="eq-valor" placeholder="Valor R$" class="w-full p-3 border rounded-xl text-sm outline-none focus:border-orange-500" required>
+                            <select id="eq-aprovado" class="w-full p-3 border rounded-xl text-sm font-bold text-orange-600 outline-none">
                                 <option value="analise">⏳ Em Análise</option>
                                 <option value="sim">✓ Aprovado</option>
                                 <option value="nao">✕ Negado</option>
                             </select>
-                            <button class="w-full bg-[#ec7000] text-white py-3 rounded-lg font-bold">Lançar Agora</button>
+                            <button class="w-full bg-[#ec7000] text-white py-3 rounded-xl font-bold">Lançar no Sistema</button>
                         </form>
                     </div>
-                    <div class="xl:col-span-3 bg-white rounded-2xl border shadow-sm overflow-hidden">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50 border-b text-[10px] text-gray-400 font-black uppercase">
-                                <tr>
-                                    <th class="p-4">Cliente / Info</th>
-                                    <th class="p-4 text-right">Valor</th>
-                                    <th class="p-4 text-center">Status</th>
-                                    <th class="p-4 text-center">Excluir</th>
-                                </tr>
-                            </thead>
-                            <tbody id="eq-tabela-body" class="divide-y divide-gray-100 italic text-gray-400"></tbody>
-                        </table>
-                    </div>
+
+                    <div class="xl:col-span-3 space-y-3" id="lista-vendas">
+                        </div>
                 </div>
             </section>
 
             <section id="page-config" class="page-content">
-                <div class="bg-white p-8 rounded-3xl border shadow-sm max-w-2xl">
-                    <h3 class="text-xl font-black mb-6 italic text-gray-800">Planejamento do Trimestre</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Equilíbrio de Contas (R$)</label>
-                            <input type="number" id="cfg-meta-eq" class="w-full p-3 border rounded-xl outline-none focus:border-orange-500 font-bold">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Produtos (R$)</label>
-                            <input type="number" id="cfg-meta-prod" class="w-full p-3 border rounded-xl outline-none focus:border-blue-500 font-bold">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Renegociação (R$)</label>
-                            <input type="number" id="cfg-meta-reneg" class="w-full p-3 border rounded-xl outline-none focus:border-green-500 font-bold">
-                        </div>
-                    </div>
-                    <button onclick="salvarConfig()" class="mt-8 bg-gray-800 text-white px-10 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg">
-                        Atualizar Planejamento Geral
-                    </button>
+                <div class="bg-white p-6 rounded-3xl border shadow-sm max-w-sm mx-auto">
+                    <h3 class="font-bold mb-4 italic">Ajustar Metas</h3>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Equilíbrio (R$)</label>
+                    <input type="number" id="cfg-meta-eq" class="w-full p-4 border rounded-2xl mt-1 mb-6 outline-none focus:border-orange-500 font-bold text-lg">
+                    <button onclick="salvarConfig()" class="w-full bg-gray-800 text-white py-4 rounded-2xl font-bold">Salvar Meta do Trimestre</button>
                 </div>
             </section>
 
@@ -185,11 +131,17 @@
     </main>
 
     <script>
-        // Banco de Dados Local
-        let dadosEq = JSON.parse(localStorage.getItem('itau_final_v1')) || [];
-        let metas = JSON.parse(localStorage.getItem('itau_metas_v1')) || {
-            eq: 500000, prod: 300000, reneg: 150000
-        };
+        let dadosEq = JSON.parse(localStorage.getItem('itau_v_mobile')) || [];
+        let metaEq = localStorage.getItem('itau_meta_v_mobile') || 500000;
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('sidebar-closed');
+            document.getElementById('sidebar').classList.toggle('sidebar-open');
+        }
+
+        function toggleForm() {
+            document.getElementById('form-container').classList.toggle('hidden');
+        }
 
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
@@ -197,10 +149,11 @@
             document.getElementById('page-' + id).classList.add('active');
             document.getElementById('link-' + id).classList.add('active-link');
             document.getElementById('page-title').innerText = id === 'dash' ? 'Home' : id.toUpperCase();
+            if(window.innerWidth < 768) toggleMenu();
             render();
         }
 
-        // Lógica Excel
+        // Importação Excel
         document.getElementById('excel-input').addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = (evt) => {
@@ -234,53 +187,48 @@
             }
         }
 
-        function salvarConfig() {
-            metas.eq = document.getElementById('cfg-meta-eq').value;
-            metas.prod = document.getElementById('cfg-meta-prod').value;
-            metas.reneg = document.getElementById('cfg-meta-reneg').value;
-            localStorage.setItem('itau_metas_v1', JSON.stringify(metas));
-            alert('Planejamento Atualizado com sucesso!');
-            render();
-        }
-
         function saveAndRender() {
-            localStorage.setItem('itau_final_v1', JSON.stringify(dadosEq));
+            localStorage.setItem('itau_v_mobile', JSON.stringify(dadosEq));
             render();
         }
 
         function render() {
-            // Cálculos Equilíbrio
-            const aprovEq = dadosEq.filter(d => d.aprovado === 'sim').reduce((s, c) => s + c.valor, 0);
-            const percEq = Math.min((aprovEq / metas.eq) * 100, 100).toFixed(1);
+            const aprovados = dadosEq.filter(d => d.aprovado === 'sim');
+            const soma = aprovados.reduce((s, c) => s + c.valor, 0);
+            const perc = Math.min((soma / metaEq) * 100, 100).toFixed(1);
 
             // Dashboard
-            document.getElementById('dash-eq-vendido').innerText = aprovEq.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            document.getElementById('dash-eq-meta').innerText = `Meta: R$ ${parseFloat(metas.eq).toLocaleString()}`;
-            document.getElementById('dash-eq-perc').innerText = Math.round(percEq) + '%';
-            document.getElementById('dash-eq-barra').style.width = percEq + '%';
+            document.getElementById('dash-eq-vendido').innerText = soma.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('dash-eq-meta').innerText = `Meta: R$ ${parseFloat(metaEq).toLocaleString()}`;
+            document.getElementById('dash-eq-perc').innerText = Math.round(perc) + '%';
+            document.getElementById('dash-eq-barra').style.width = perc + '%';
 
-            document.getElementById('dash-prod-meta').innerText = `Meta: R$ ${parseFloat(metas.prod).toLocaleString()}`;
-            document.getElementById('dash-reneg-meta').innerText = `Meta: R$ ${parseFloat(metas.reneg).toLocaleString()}`;
-
-            // Tabela
-            const body = document.getElementById('eq-tabela-body');
-            body.innerHTML = dadosEq.map(d => `
-                <tr class="hover:bg-gray-50 border-l-4 ${d.aprovado === 'sim' ? 'border-l-green-400' : d.aprovado === 'nao' ? 'border-l-red-300' : 'border-l-yellow-300'}">
-                    <td class="p-4"><div class="font-bold text-gray-800">${d.cliente}</div><div class="text-[10px] text-gray-400 uppercase font-black">${d.modalidade} • ${d.vendedor}</div></td>
-                    <td class="p-4 text-right font-black ${d.aprovado === 'sim' ? 'text-green-600' : 'text-gray-400'}">R$ ${d.valor.toLocaleString()}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="toggleStatus(${d.id})" class="px-2 py-1 rounded-md text-[9px] font-black uppercase border ${d.aprovado === 'sim' ? 'status-sim' : d.aprovado === 'nao' ? 'status-nao' : 'status-analise'}">
-                            ${d.aprovado === 'sim' ? 'Aprovado' : d.aprovado === 'nao' ? 'Negado' : 'Análise'}
-                        </button>
-                    </td>
-                    <td class="p-4 text-center"><button onclick="deleteRegistro(${d.id})" class="text-gray-300 hover:text-red-500 transition font-bold text-lg font-black">✕</button></td>
-                </tr>
-            `).reverse().join('');
-
-            // Preencher inputs config
-            document.getElementById('cfg-meta-eq').value = metas.eq;
-            document.getElementById('cfg-meta-prod').value = metas.prod;
-            document.getElementById('cfg-meta-reneg').value = metas.reneg;
+            // Lista de Cards (Mobile Otimizado)
+            const lista = document.getElementById('lista-vendas');
+            if(dadosEq.length === 0) {
+                lista.innerHTML = '<div class="text-center p-10 text-gray-400 italic">Nenhum dado lançado.</div>';
+            } else {
+                lista.innerHTML = dadosEq.map(d => `
+                    <div class="bg-white p-4 rounded-2xl border-l-8 shadow-sm ${d.aprovado === 'sim' ? 'border-l-green-400' : d.aprovado === 'nao' ? 'border-l-red-400' : 'border-l-yellow-400'}">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h5 class="font-bold text-gray-800 leading-tight">${d.cliente}</h5>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">${d.modalidade} • ${d.vendedor}</p>
+                            </div>
+                            <button onclick="deleteRegistro(${d.id})" class="text-gray-300 p-1">✕</button>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <p class="font-black ${d.aprovado === 'sim' ? 'text-green-600' : 'text-gray-400'} text-lg">
+                                R$ ${d.valor.toLocaleString()}
+                            </p>
+                            <button onclick="toggleStatus(${d.id})" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase border shadow-sm ${d.aprovado === 'sim' ? 'status-sim' : d.aprovado === 'nao' ? 'status-nao' : 'status-analise'}">
+                                ${d.aprovado === 'sim' ? 'Aprovado' : d.aprovado === 'nao' ? 'Negado' : 'Em Análise'}
+                            </button>
+                        </div>
+                    </div>
+                `).reverse().join('');
+            }
+            document.getElementById('cfg-meta-eq').value = metaEq;
         }
 
         document.getElementById('form-eq').onsubmit = (e) => {
@@ -295,8 +243,16 @@
                 aprovado: document.getElementById('eq-aprovado').value
             });
             e.target.reset();
+            if(window.innerWidth < 768) toggleForm();
             saveAndRender();
         };
+
+        function salvarConfig() {
+            metaEq = document.getElementById('cfg-meta-eq').value;
+            localStorage.setItem('itau_meta_v_mobile', metaEq);
+            alert('Meta Atualizada!');
+            render();
+        }
 
         render();
     </script>
