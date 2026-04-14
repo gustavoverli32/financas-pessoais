@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanças Diárias | Minimal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow-y: hidden; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <nav class="bg-white border-b border-gray-200 py-4 px-6 sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-blue-600">Finanças<span class="text-gray-400">Diárias</span></h1>
+            <button id="openModal" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2">
+                <span>+</span> Novo
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto p-6">
+        
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 font-medium">Saldo Atual</p>
+                <h2 id="total-balance" class="text-3xl font-bold mt-1 text-blue-600">R$ 0,00</h2>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 font-medium">Receitas</p>
+                <h2 id="total-income" class="text-2xl font-bold mt-1 text-green-500">R$ 0,00</h2>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 font-medium">Despesas</p>
+                <h2 id="total-expense" class="text-2xl font-bold mt-1 text-red-500">R$ 0,00</h2>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h3 class="font-bold text-lg">Últimas Transações</h3>
+                <div class="flex gap-2 bg-gray-100 p-1 rounded-lg text-sm">
+                    <button onclick="filterTransactions('all')" class="px-4 py-1.5 rounded-md bg-white shadow-sm font-medium">Tudo</button>
+                    <button onclick="filterTransactions('income')" class="px-4 py-1.5 rounded-md hover:bg-gray-200 transition">Receitas</button>
+                    <button onclick="filterTransactions('expense')" class="px-4 py-1.5 rounded-md hover:bg-gray-200 transition">Despesas</button>
+                </div>
+            </div>
+
+            <div id="transaction-list" class="divide-y divide-gray-100">
+                <p class="p-10 text-center text-gray-400">Nenhuma transação cadastrada ainda.</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6">Nova Transação</h2>
+            <form id="transaction-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <input type="text" id="desc" required placeholder="Ex: Mercado, Salário..." class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor (R$)</label>
+                        <input type="number" step="0.01" id="amount" required class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                        <select id="type" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="expense">Despesa</option>
+                            <option value="income">Receita</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="closeModal" class="flex-1 px-4 py-3 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition">Cancelar</button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('modal');
+        const form = document.getElementById('transaction-form');
+        const list = document.getElementById('transaction-list');
+        
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // Funções do Modal
+        document.getElementById('openModal').onclick = () => modal.classList.remove('hidden');
+        document.getElementById('closeModal').onclick = () => modal.classList.add('hidden');
+
+        function updateUI(data = transactions) {
+            list.innerHTML = '';
+            
+            if (data.length === 0) {
+                list.innerHTML = '<p class="p-10 text-center text-gray-400">Nenhuma transação encontrada.</p>';
+            }
+
+            let income = 0, expense = 0;
+
+            data.forEach((t, index) => {
+                const isIncome = t.type === 'income';
+                const val = parseFloat(t.amount);
+                
+                if (isIncome) income += val; else expense += val;
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-4 hover:bg-gray-50 transition';
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center ${isIncome ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+                            ${isIncome ? '↑' : '↓'}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800">${t.desc}</p>
+                            <p class="text-xs text-gray-400">${new Date().toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold ${isIncome ? 'text-green-500' : 'text-red-500'}">
+                            ${isIncome ? '+' : '-'} R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                        </p>
+                        <button onclick="removeTransaction(${index})" class="text-xs text-gray-300 hover:text-red-500 underline">Remover</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+
+            document.getElementById('total-balance').innerText = `R$ ${(income - expense).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('total-income').innerText = `R$ ${income.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('total-expense').innerText = `R$ ${expense.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const newT = {
+                desc: document.getElementById('desc').value,
+                amount: document.getElementById('amount').value,
+                type: document.getElementById('type').value
+            };
+            transactions.unshift(newT);
+            updateUI();
+            form.reset();
+            modal.classList.add('hidden');
+        };
+
+        function removeTransaction(index) {
+            transactions.splice(index, 1);
+            updateUI();
+        }
+
+        function filterTransactions(type) {
+            if (type === 'all') return updateUI(transactions);
+            const filtered = transactions.filter(t => t.type === type);
+            updateUI(filtered);
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
