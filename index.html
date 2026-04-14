@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Itaú | Gestão de Equilíbrio</title>
+    <title>Itaú | Cockpit de Gestão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .active-link { background-color: #ec7000; color: white !important; }
@@ -11,12 +11,13 @@
         .page-content.active { display: block; }
         .status-sim { background-color: #dcfce7; color: #166534; }
         .status-nao { background-color: #fee2e2; color: #991b1b; }
-        .badge-modalidade { background-color: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        .status-analise { background-color: #fef9c3; color: #854d0e; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body class="bg-gray-50 flex h-screen overflow-hidden font-sans text-gray-700">
 
-    <aside class="w-64 bg-[#003399] text-white flex flex-col shadow-xl">
+    <aside class="w-64 bg-[#003399] text-white flex flex-col shadow-xl z-20">
         <div class="p-6 border-b border-blue-800">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <span class="bg-white text-[#003399] px-2 py-0.5 rounded text-sm">itau</span> Cockpit
@@ -25,13 +26,19 @@
         
         <nav class="flex-1 p-4 space-y-1">
             <button onclick="showPage('dash')" id="link-dash" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition active-link">
-                <span>📊</span> Dashboard Geral
+                <span>📊</span> Home
             </button>
-            <p class="text-[10px] uppercase text-blue-300 font-bold mt-6 mb-2 ml-2">Gestão de Carteira</p>
-            <button onclick="showPage('equilibrio')" id="link-equilibrio" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition">
-                <span>⚖️</span> Equilíbrio (Empréstimos)
+            <p class="text-[10px] uppercase text-blue-300 font-bold mt-6 mb-2 ml-2">Acompanhamentos</p>
+            <button onclick="showPage('equilibrio')" id="link-equilibrio" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
+                <span>⚖️</span> Equilíbrio de Contas
             </button>
-            <button onclick="showPage('config')" id="link-config" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition">
+            <button onclick="showPage('produtos')" id="link-produtos" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
+                <span>📦</span> Produtos
+            </button>
+            <button onclick="showPage('renegociacao')" id="link-renegociacao" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
+                <span>🤝</span> Renegociação
+            </button>
+            <button onclick="showPage('config')" id="link-config" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-800 transition text-blue-100 font-medium">
                 <span>⚙️</span> Configurar Metas
             </button>
         </nav>
@@ -39,116 +46,118 @@
 
     <main class="flex-1 flex flex-col overflow-hidden">
         
-        <header class="bg-white border-b p-4 flex justify-between items-center">
-            <h2 id="page-title" class="font-bold text-lg text-[#ec7000]">Equilíbrio</h2>
-            <div class="flex items-center gap-4 text-sm font-medium">
-                Trimestre Atual: <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full">Q2 2026</span>
+        <header class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
+            <h2 id="page-title" class="font-bold text-lg text-[#ec7000]">Home</h2>
+            <div class="text-xs font-bold text-gray-400 uppercase bg-gray-50 px-3 py-1.5 rounded-lg border">
+                Q2 2026 • <span class="text-gray-800">Agência Vila Nova</span>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 overflow-y-auto p-8">
             
-            <section id="page-equilibrio" class="page-content active">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border mb-6">
-                    <div class="flex justify-between items-end mb-4">
-                        <div>
-                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Aprovado (Equilíbrio)</p>
-                            <h3 id="eq-soma-texto" class="text-3xl font-black text-gray-800">R$ 0,00</h3>
+            <section id="page-dash" class="page-content active">
+                <div class="mb-8">
+                    <h3 class="text-2xl font-black text-gray-800">Olá, Gustavo</h3>
+                    <p class="text-gray-400 text-sm italic">Aqui está o resumo da performance da sua equipe hoje.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 card-shadow relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="text-6xl">⚖️</span>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xs text-gray-400 font-bold">Meta: <span id="eq-meta-texto">R$ 0,00</span></p>
-                            <p id="eq-perc-texto" class="text-2xl font-black text-[#ec7000]">0%</p>
+                        <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Equilíbrio de Contas</p>
+                        <h4 class="text-sm font-bold text-gray-700 mb-6">Consolidado de Empréstimos</h4>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Vendido (Aprovado)</p>
+                                <p id="dash-eq-vendido" class="text-2xl font-black text-gray-800">R$ 0,00</p>
+                            </div>
+                            
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold">Meta do Trimestre</p>
+                                    <p id="dash-eq-meta" class="text-sm font-bold text-gray-600">R$ 0,00</p>
+                                </div>
+                                <div class="text-right">
+                                    <p id="dash-eq-perc" class="text-3xl font-black text-[#ec7000]">0%</p>
+                                </div>
+                            </div>
+
+                            <div class="w-full bg-gray-100 h-2 rounded-full mt-2 overflow-hidden">
+                                <div id="dash-eq-barra" class="bg-[#ec7000] h-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                            </div>
                         </div>
+                        
+                        <button onclick="showPage('equilibrio')" class="w-full mt-6 py-2 text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-tighter border-t pt-4">
+                            Ver detalhes da planilha →
+                        </button>
                     </div>
-                    <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
-                        <div id="eq-barra" class="bg-[#ec7000] h-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+
+                    <div class="bg-gray-50 p-6 rounded-3xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400">
+                        <span class="text-2xl mb-2">📦</span>
+                        <p class="text-xs font-bold uppercase">Produtos</p>
+                        <p class="text-[10px]">Aguardando lançamentos...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-equilibrio" class="page-content">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border mb-6 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Status Atual: Equilíbrio</p>
+                        <h3 id="eq-soma-topo" class="text-2xl font-black text-gray-800">R$ 0,00</h3>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-gray-400 italic">Meta: <span id="eq-meta-topo">R$ 0,00</span></p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                    <div class="xl:col-span-1 bg-white p-6 rounded-2xl shadow-sm border h-fit">
-                        <h4 class="font-bold mb-4 text-gray-800 border-b pb-2">Novo Registro</h4>
-                        <form id="form-eq" class="space-y-3 text-sm">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cliente</label>
-                                <input type="text" id="eq-cliente" placeholder="Nome Completo" class="w-full p-2.5 border rounded-lg outline-none focus:border-orange-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Agência / Conta</label>
-                                <input type="text" id="eq-conta" placeholder="0000 / 00000-0" class="w-full p-2.5 border rounded-lg outline-none focus:border-orange-500" required>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Modalidade</label>
-                                <select id="eq-modalidade" class="w-full p-2.5 border rounded-lg outline-none focus:border-orange-500 bg-white">
-                                    <option value="Crediário">Crediário</option>
-                                    <option value="LIS">LIS</option>
-                                    <option value="Consignado EP">Consignado EP</option>
-                                    <option value="Consignado OP">Consignado OP</option>
-                                    <option value="Consignado INSS">Consignado INSS</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estagiário / Vendedor</label>
-                                <input type="text" id="eq-vendedor" placeholder="Nome do Responsável" class="w-full p-2.5 border rounded-lg outline-none focus:border-orange-500" required>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Valor</label>
-                                    <input type="number" id="eq-valor" placeholder="R$" class="w-full p-2.5 border rounded-lg outline-none focus:border-orange-500" required>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Aprovado?</label>
-                                    <select id="eq-aprovado" class="w-full p-2.5 border rounded-lg outline-none focus:border-orange-500 bg-white font-bold">
-                                        <option value="sim">SIM</option>
-                                        <option value="nao">NÃO</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="w-full bg-[#ec7000] text-white py-3 rounded-lg font-bold mt-4 hover:bg-orange-600 transition shadow-lg shadow-orange-200">
-                                Registrar Contrato
-                            </button>
+                    <div class="xl:col-span-1 bg-white p-6 rounded-2xl border shadow-sm h-fit">
+                        <form id="form-eq" class="space-y-3">
+                            <input type="text" id="eq-cliente" placeholder="Cliente" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
+                            <input type="text" id="eq-conta" placeholder="Ag/Conta" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
+                            <select id="eq-modalidade" class="w-full p-2.5 border rounded-lg outline-none text-sm bg-white">
+                                <option value="Crediário">Crediário</option>
+                                <option value="LIS">LIS</option>
+                                <option value="Consignado EP">Consignado EP</option>
+                                <option value="Consignado OP">Consignado OP</option>
+                                <option value="Consignado INSS">Consignado INSS</option>
+                            </select>
+                            <input type="text" id="eq-vendedor" placeholder="Vendedor" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
+                            <input type="number" id="eq-valor" placeholder="Valor R$" class="w-full p-2.5 border rounded-lg outline-none text-sm focus:border-orange-500" required>
+                            <select id="eq-aprovado" class="w-full p-2.5 border rounded-lg outline-none text-sm bg-white font-bold text-orange-600">
+                                <option value="analise">⏳ Em Análise</option>
+                                <option value="sim">✓ Aprovado</option>
+                                <option value="nao">✕ Negado</option>
+                            </select>
+                            <button class="w-full bg-[#ec7000] text-white py-3 rounded-lg font-bold shadow-lg shadow-orange-100">Lançar Agora</button>
                         </form>
                     </div>
-
-                    <div class="xl:col-span-3 bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col">
-                        <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
-                            <h4 class="font-bold text-sm text-gray-600">Acompanhamento de Empréstimos</h4>
-                            <span class="text-[10px] text-gray-400 font-bold uppercase">Dados em tempo real</span>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm">
-                                <thead>
-                                    <tr class="bg-white border-b text-gray-400 text-[11px] uppercase tracking-tighter">
-                                        <th class="p-4 font-black">Cliente / Conta</th>
-                                        <th class="p-4 font-black">Modalidade</th>
-                                        <th class="p-4 font-black">Vendedor</th>
-                                        <th class="p-4 font-black text-right">Valor</th>
-                                        <th class="p-4 font-black text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="eq-tabela-body" class="divide-y divide-gray-100">
-                                    </tbody>
-                            </table>
-                        </div>
+                    <div class="xl:col-span-3 bg-white rounded-2xl border shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 border-b text-[10px] text-gray-400 font-black uppercase">
+                                <tr>
+                                    <th class="p-4 tracking-tighter">Cliente / Modalidade</th>
+                                    <th class="p-4 text-right">Valor</th>
+                                    <th class="p-4 text-center">Status</th>
+                                    <th class="p-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eq-tabela-body" class="divide-y divide-gray-100"></tbody>
+                        </table>
                     </div>
                 </div>
             </section>
 
-            <section id="page-dash" class="page-content">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="home-cards">
-                    </div>
-            </section>
-
             <section id="page-config" class="page-content">
-                <div class="bg-white p-8 rounded-2xl border max-w-md shadow-sm">
-                    <h3 class="font-bold text-lg mb-4 italic text-gray-700">Meta do Trimestre</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase">Meta Equilíbrio (R$)</label>
-                            <input type="number" id="cfg-meta-eq" class="w-full p-3 border rounded-xl mt-1 outline-none focus:border-orange-500">
-                        </div>
-                        <button onclick="salvarConfig()" class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-black transition">Atualizar Planejamento</button>
-                    </div>
+                <div class="bg-white p-6 rounded-2xl border max-w-sm">
+                    <h3 class="font-bold mb-4">Meta Trimestral</h3>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">Valor Equilíbrio de Contas</label>
+                    <input type="number" id="cfg-meta-eq" class="w-full p-3 border rounded-xl mt-1 mb-4">
+                    <button onclick="salvarConfig()" class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold">Atualizar</button>
                 </div>
             </section>
 
@@ -156,90 +165,102 @@
     </main>
 
     <script>
-        // Dados Persistentes
-        let dadosEq = JSON.parse(localStorage.getItem('itau_eq_v2')) || [];
-        let metaEq = localStorage.getItem('itau_meta_eq_v2') || 250000;
+        let dadosEq = JSON.parse(localStorage.getItem('itau_v_final_dash')) || [];
+        let metaEq = localStorage.getItem('itau_meta_v_final_dash') || 500000;
 
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
-            
             document.getElementById('page-' + id).classList.add('active');
             document.getElementById('link-' + id).classList.add('active-link');
-            document.getElementById('page-title').innerText = id === 'dash' ? 'Dashboard Geral' : id.charAt(0).toUpperCase() + id.slice(1);
+            
+            const titulos = { dash: 'Home', equilibrio: 'Equilíbrio de Contas', config: 'Configurações', produtos: 'Produtos', renegociacao: 'Renegociação' };
+            document.getElementById('page-title').innerText = titulos[id] || 'Itaú';
+            render();
+        }
+
+        function toggleStatus(id) {
+            const index = dadosEq.findIndex(d => d.id === id);
+            const flow = ['analise', 'sim', 'nao'];
+            dadosEq[index].aprovado = flow[(flow.indexOf(dadosEq[index].aprovado) + 1) % 3];
+            saveAndRender();
+        }
+
+        function deleteRegistro(id) {
+            if(confirm('Excluir lançamento?')) {
+                dadosEq = dadosEq.filter(d => d.id !== id);
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('itau_v_final_dash', JSON.stringify(dadosEq));
             render();
         }
 
         function render() {
-            // Cálculos de Performance
             const aprovados = dadosEq.filter(d => d.aprovado === 'sim');
-            const somaAprovados = aprovados.reduce((acc, curr) => acc + curr.valor, 0);
-            const perc = Math.min((somaAprovados / metaEq) * 100, 100).toFixed(1);
+            const soma = aprovados.reduce((s, c) => s + c.valor, 0);
+            const perc = Math.min((soma / metaEq) * 100, 100).toFixed(1);
 
-            // Atualiza UI de Performance
-            document.getElementById('eq-soma-texto').innerText = somaAprovados.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            document.getElementById('eq-meta-texto').innerText = parseFloat(metaEq).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            document.getElementById('eq-perc-texto').innerText = perc + '%';
-            document.getElementById('eq-barra').style.width = perc + '%';
+            // Atualiza Dashboard (Home)
+            document.getElementById('dash-eq-vendido').innerText = soma.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('dash-eq-meta').innerText = parseFloat(metaEq).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('dash-eq-perc').innerText = Math.round(perc) + '%';
+            document.getElementById('dash-eq-barra').style.width = perc + '%';
 
-            // Renderizar Tabela de Equilíbrio
-            const body = document.getElementById('eq-tabela-body');
-            if(dadosEq.length === 0) {
-                body.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-gray-300 italic">Nenhum contrato registrado até o momento.</td></tr>';
-            } else {
-                body.innerHTML = dadosEq.map(d => `
-                    <tr class="hover:bg-gray-50 transition border-l-4 ${d.aprovado === 'sim' ? 'border-l-green-400' : 'border-l-red-300'}">
-                        <td class="p-4">
-                            <div class="font-bold text-gray-800">${d.cliente}</div>
-                            <div class="text-[10px] text-gray-400 font-mono tracking-tighter">${d.conta}</div>
-                        </td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded text-[10px] font-bold badge-modalidade uppercase">${d.modalidade}</span>
-                        </td>
-                        <td class="p-4 text-gray-500 font-medium">${d.vendedor}</td>
-                        <td class="p-4 text-right font-black ${d.aprovado === 'sim' ? 'text-green-600' : 'text-gray-300'}">
-                            R$ ${d.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                        </td>
-                        <td class="p-4 text-center">
-                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${d.aprovado === 'sim' ? 'status-sim' : 'status-nao'}">
-                                ${d.aprovado === 'sim' ? '✓ APROVADO' : '✕ NEGADO'}
-                            </span>
-                        </td>
-                    </tr>
-                `).reverse().join('');
+            // Atualiza Tela de Equilíbrio
+            if(document.getElementById('eq-soma-topo')) {
+                document.getElementById('eq-soma-topo').innerText = soma.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                document.getElementById('eq-meta-topo').innerText = parseFloat(metaEq).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
             }
+
+            const body = document.getElementById('eq-tabela-body');
+            body.innerHTML = dadosEq.map(d => `
+                <tr class="hover:bg-gray-50 border-l-4 ${d.aprovado === 'sim' ? 'border-l-green-400' : d.aprovado === 'nao' ? 'border-l-red-300' : 'border-l-yellow-300'}">
+                    <td class="p-4">
+                        <div class="font-bold text-gray-800">${d.cliente}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase">${d.modalidade} • ${d.vendedor}</div>
+                    </td>
+                    <td class="p-4 text-right font-black ${d.aprovado === 'sim' ? 'text-green-600' : 'text-gray-400'}">
+                        R$ ${d.valor.toLocaleString()}
+                    </td>
+                    <td class="p-4 text-center">
+                        <button onclick="toggleStatus(${d.id})" class="px-2 py-1 rounded-md text-[9px] font-black uppercase border ${d.aprovado === 'sim' ? 'status-sim' : d.aprovado === 'nao' ? 'status-nao' : 'status-analise'}">
+                            ${d.aprovado === 'sim' ? 'Aprovado' : d.aprovado === 'nao' ? 'Negado' : 'Em Análise'}
+                        </button>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteRegistro(${d.id})" class="text-gray-300 hover:text-red-500 transition font-bold text-lg">✕</button>
+                    </td>
+                </tr>
+            `).reverse().join('');
 
             document.getElementById('cfg-meta-eq').value = metaEq;
         }
 
-        // Evento de Submissão do Formulário
         document.getElementById('form-eq').onsubmit = (e) => {
             e.preventDefault();
-            const registro = {
+            dadosEq.push({
+                id: Date.now(),
                 cliente: document.getElementById('eq-cliente').value,
                 conta: document.getElementById('eq-conta').value,
                 modalidade: document.getElementById('eq-modalidade').value,
                 vendedor: document.getElementById('eq-vendedor').value,
                 valor: parseFloat(document.getElementById('eq-valor').value),
-                aprovado: document.getElementById('eq-aprovado').value,
-                timestamp: new Date().getTime()
-            };
-            
-            dadosEq.push(registro);
-            localStorage.setItem('itau_eq_v2', JSON.stringify(dadosEq));
+                aprovado: document.getElementById('eq-aprovado').value
+            });
             e.target.reset();
-            render();
-            alert('Contrato de ' + registro.modalidade + ' registrado com sucesso!');
+            saveAndRender();
         };
 
         function salvarConfig() {
             metaEq = document.getElementById('cfg-meta-eq').value;
-            localStorage.setItem('itau_meta_eq_v2', metaEq);
-            alert('Nova meta de R$ ' + metaEq + ' configurada para o Equilíbrio.');
+            localStorage.setItem('itau_meta_v_final_dash', metaEq);
+            alert('Meta Atualizada!');
             render();
         }
 
-        // Inicialização
         render();
     </script>
 </body>
